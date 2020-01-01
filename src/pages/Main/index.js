@@ -6,7 +6,7 @@ import { Keyboard } from 'react-native';
 
 import api from '../../services/api';
 
-import { Container, Form, Input, SubmitButton, Res, UserName } from './styles';
+import { Container, Form, Input, SubmitButton } from './styles';
 
 export default class Main extends Component {
     state = {
@@ -53,11 +53,6 @@ export default class Main extends Component {
                         <Icon name="add" size={20} color="#fff" />
                     </SubmitButton>
                 </Form>
-                <Res>
-                    {users.map(user => (
-                        <UserName key={user.login}>{user.name}</UserName>
-                    ))}
-                </Res>
             </Container>
         );
     }

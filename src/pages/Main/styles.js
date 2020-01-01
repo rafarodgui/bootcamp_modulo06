@@ -34,13 +34,3 @@ export const SubmitButton = styled(RectButton)`
     padding: 0 12px;
     margin-left: 10px;
 `;
-
-export const Res = styled.View`
-    justify-content: center;
-    align-items: center;
-`;
-
-export const UserName = styled.Text`
-    font-size: 20px;
-    color: #7159;
-`;
