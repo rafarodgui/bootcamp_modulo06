@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
-
+import PropTypes from 'prop-types';
+import { Keyboard, ActivityIndicator } from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-
-import { Keyboard } from 'react-native';
-
 import api from '../../services/api';
 
 import {
@@ -17,37 +16,84 @@ import {
     Name,
     Bio,
     ProfileButton,
-    ProfileButtonText
+    ProfileButtonText,
+    ErrorText,
 } from './styles';
 
 export default class Main extends Component {
+    static propTypes = {
+        navigation: PropTypes.shape({
+            navigate: PropTypes.func,
+        }).isRequired,
+    };
+
     state = {
         newUser: '',
         users: [],
+        loading: false,
+        err: '',
     };
+
+    async componentDidMount() {
+        const users = await AsyncStorage.getItem('users');
+
+        if (users) {
+            this.setState({ users: JSON.parse(users) });
+        }
+    }
+
+    componentDidUpdate(_, prevState) {
+        const { users } = this.state;
+
+        if (prevState.users !== users) {
+            AsyncStorage.setItem('users', JSON.stringify(users));
+        }
+    }
 
     handleSubmit = async () => {
         const { users, newUser } = this.state;
 
-        const response = await api.get(`/users/${newUser}`);
+        this.setState({ loading: true });
 
-        const data = {
-            name: response.data.name,
-            login: response.data.login,
-            bio: response.data.bio,
-            avatar: response.data.avatar_url,
-        };
+        try {
+            const response = await api.get(`/users/${newUser}`);
 
-        this.setState({
-            users: [...users, data],
-            newUser: '',
-        });
+            const data = {
+                name: response.data.name,
+                login: response.data.login,
+                bio: response.data.bio,
+                avatar: response.data.avatar_url,
+            };
+
+            this.setState({
+                users: [...users, data],
+                newUser: '',
+                loading: false,
+                err: '',
+            });
+        } catch {
+            this.setState({
+                err: `O usuário ${newUser} não foi encontrado, tente novamente`,
+                loading: false,
+                newUser: '',
+            });
+        }
 
         Keyboard.dismiss();
     };
 
+    handleNavigate = user => {
+        const { navigation } = this.props;
+
+        navigation.navigate('User', { user });
+    };
+
+    static navigationOptions = {
+        title: 'Usuários',
+    };
+
     render() {
-        const { users, newUser } = this.state;
+        const { users, newUser, loading, err } = this.state;
 
         return (
             <Container>
@@ -61,10 +107,15 @@ export default class Main extends Component {
                         returnKeyType="send"
                         onSubmitEditing={this.handleSubmit}
                     />
-                    <SubmitButton onPress={this.handleSubmit}>
-                        <Icon name="add" size={20} color="#fff" />
+                    <SubmitButton loading={loading} onPress={this.handleSubmit}>
+                        {loading ? (
+                            <ActivityIndicator color="#fff" size={20} />
+                        ) : (
+                            <Icon name="add" size={20} color="#fff" />
+                        )}
                     </SubmitButton>
                 </Form>
+                <ErrorText>{err}</ErrorText>
                 <List
                     data={users}
                     keyExtractor={user => user.login}
@@ -73,7 +124,9 @@ export default class Main extends Component {
                             <Avatar source={{ uri: item.avatar }} />
                             <Name>{item.name}</Name>
                             <Bio>{item.bio}</Bio>
-                            <ProfileButton onPress={() => {}}>
+                            <ProfileButton
+                                onPress={() => this.handleNavigate(item)}
+                            >
                                 <ProfileButtonText>
                                     Ver perfil
                                 </ProfileButtonText>
@@ -85,7 +138,3 @@ export default class Main extends Component {
         );
     }
 }
-
-Main.navigationOptions = {
-    title: 'Usuários',
-};

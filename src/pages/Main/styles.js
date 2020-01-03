@@ -35,10 +35,11 @@ export const SubmitButton = styled(RectButton)`
     margin-left: 10px;
 `;
 
-export const List = styled.FlatList`
+export const List = styled.FlatList.attrs({
+    showsVerticalScrollIndicator: false,
+})`
     margin-top: 20px;
 `;
-
 
 export const User = styled.View`
     align-items: center;
@@ -46,9 +47,9 @@ export const User = styled.View`
 `;
 
 export const Avatar = styled.Image`
-    width: 64px;
-    height: 64px;
-    border-radius: 32px;
+    width: 128px;
+    height: 128px;
+    border-radius: 64px;
     background-color: #eee;
 `;
 
@@ -80,6 +81,7 @@ export const ProfileButton = styled(RectButton)`
     padding: 10px;
     border-radius: 4px;
     height: 36px;
+    opacity: ${props => (props.loading ? 0.5 : 1)};
 `;
 
 export const ProfileButtonText = styled.Text`
@@ -87,4 +89,10 @@ export const ProfileButtonText = styled.Text`
     color: #fff;
     font-weight: bold;
     text-transform: uppercase;
+`;
+
+export const ErrorText = styled.Text`
+    font-size: 16px;
+    margin: 10px auto;
+    color: #ff0000;
 `;
